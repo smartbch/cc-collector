@@ -24,41 +24,57 @@ func main() {
 	}
 
 	for {
-		handleAllRedeemingUTXOs(sbchClient)
+		handleAllPendingUTXOs(sbchClient)
 		time.Sleep(1 * time.Minute)
 	}
 }
 
-func handleAllRedeemingUTXOs(sbchClient *SbchClient) {
-	operators, err := sbchClient.getOperators()
+func handleAllPendingUTXOs(sbchClient *SbchClient) {
+	cccInfo, err := sbchClient.getCcCovenantInfo()
 	if err != nil {
-		fmt.Println("failed to get operators:", err.Error())
+		fmt.Println("failed to get CcCovenantInfo:", err.Error())
 		return
 	}
 
-	monitors, err := sbchClient.getMonitors()
-	if err != nil {
-		fmt.Println("failed to get monitors:", err.Error())
-		return
-	}
-
-	// TODO: check count of operators and monitors
-	operatorPubkeys := getOperatorPubkeys(operators)
-	monitorPubkeys := getMonitorPubkeys(monitors)
-	ccCovenant, err := ccc.NewCcCovenantMainnet(operatorPubkeys, monitorPubkeys)
-	if err != nil {
-		fmt.Println("failed to create CcCovenant instance:", err.Error())
-		return
-	}
-
-	utxos, err := sbchClient.getRedeemingUtxosForOperators()
+	redeemingUtxos, err := sbchClient.getRedeemingUtxosForOperators()
 	if err != nil {
 		fmt.Println("failed to get redeeming UTXOs:", err.Error())
 		return
 	}
+	if len(redeemingUtxos) > 0 {
+		operatorPubkeys := getOperatorPubkeys(cccInfo.Operators)
+		monitorPubkeys := getMonitorPubkeys(cccInfo.Monitors)
+		ccCovenant, err := ccc.NewDefaultCcCovenant(operatorPubkeys, monitorPubkeys)
+		if err != nil {
+			fmt.Println("failed to create CcCovenant instance:", err.Error())
+			return
+		}
 
-	for _, utxo := range utxos {
-		handleRedeemingUTXO(ccCovenant, operators, utxo)
+		for _, utxo := range redeemingUtxos {
+			handleRedeemingUTXO(ccCovenant, cccInfo.Operators, utxo)
+		}
+	}
+
+	toBeConvertedUtxos, err := sbchClient.getToBeConvertedUtxosForOperators()
+	if err != nil {
+		fmt.Println("failed to get redeeming UTXOs:", err.Error())
+		return
+	}
+	if len(toBeConvertedUtxos) > 0 {
+		oldOperatorPubkeys := getOperatorPubkeys(cccInfo.OldOperators)
+		oldMonitorPubkeys := getMonitorPubkeys(cccInfo.OldMonitors)
+		newOperatorPubkeys := getOperatorPubkeys(cccInfo.Operators)
+		newMonitorPubkeys := getMonitorPubkeys(cccInfo.Monitors)
+		ccCovenant, err := ccc.NewDefaultCcCovenant(oldOperatorPubkeys, oldMonitorPubkeys)
+		if err != nil {
+			fmt.Println("failed to create CcCovenant instance:", err.Error())
+			return
+		}
+
+		for _, utxo := range toBeConvertedUtxos {
+			handleToBeConvertedUTXO(ccCovenant, cccInfo.OldOperators,
+				newOperatorPubkeys, newMonitorPubkeys, utxo)
+		}
 	}
 }
 
@@ -93,7 +109,56 @@ func handleRedeemingUTXO(
 		return
 	}
 
-	rawTx, err := ccCovenant.FinishRedeemByUserTx(tx, sigs)
+	_, rawTx, err := ccCovenant.FinishRedeemByUserTx(tx, sigs)
+	if err != nil {
+		fmt.Println("failed to sign tx:", err.Error())
+		return
+	}
+	fmt.Println("rawTx:", rawTx)
+
+	err = broadcastBchTx(rawTx)
+	if err != nil {
+		fmt.Println("failed to broadcast BCH tx:", err.Error())
+	}
+
+	// TODO
+}
+
+func handleToBeConvertedUTXO(
+	oldCcCovenant *ccc.CcCovenant,
+	oldOperators []sbchrpc.OperatorInfo,
+	newOperatorPubkeys [][]byte,
+	newMonitorPubkeys [][]byte,
+	utxo *sbchrpc.UtxoInfo,
+) {
+	txid := utxo.Txid[:]
+	vout := utxo.Index
+	amt := int64(utxo.Amount)
+	tx, sigHash, err := oldCcCovenant.GetConvertByOperatorsTxSigHash(txid, vout, amt,
+		newOperatorPubkeys, newMonitorPubkeys)
+	if err != nil {
+		fmt.Println("failed to call GetConvertByOperatorsTxSigHash:", err.Error())
+		return
+	}
+
+	var sigs [][]byte
+	for _, operator := range oldOperators {
+		sig, err := getSigByHash(operator.RpcUrl, sigHash)
+		if err != nil {
+			fmt.Println("failed to query sig by hash:", err.Error())
+			continue
+		}
+
+		sigs = append(sigs, sig)
+	}
+
+	if len(sigs) < minOperatorSigCount {
+		fmt.Println("not enough operator sigs")
+		return
+	}
+
+	_, rawTx, err := oldCcCovenant.FinishConvertByOperatorsTx(tx,
+		newOperatorPubkeys, newMonitorPubkeys, sigs)
 	if err != nil {
 		fmt.Println("failed to sign tx:", err.Error())
 		return
@@ -113,8 +178,8 @@ func sbchAddrToBchAddr(addr gethcmn.Address) string {
 	return addr.String()
 }
 
-func broadcastBchTx(rawTx string) error {
+func broadcastBchTx(rawTx []byte) error {
 	// TODO
-	fmt.Println(rawTx)
+	fmt.Println(string(rawTx))
 	return nil
 }

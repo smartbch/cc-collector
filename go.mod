@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/ethereum/go-ethereum v1.10.7
-	github.com/smartbch/smartbch v0.4.5-0.20220829070302-6b938f3a2b8d
+	github.com/smartbch/smartbch v0.4.5-0.20220929093626-da9ac9702d77
 )
 
 require (
@@ -71,7 +71,7 @@ require (
 	github.com/seehuhn/mt19937 v1.0.0 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/smartbch/moeingads v0.4.2 // indirect
-	github.com/smartbch/moeingdb v0.4.4-0.20220829014150-b40b1c47846a // indirect
+	github.com/smartbch/moeingdb v0.4.4-0.20220901031017-07b13bf12c62 // indirect
 	github.com/smartbch/moeingevm v0.4.2-0.20220509120345-27a3d288346f // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect

@@ -39,27 +39,19 @@ func (cli *SbchClient) getCcCovenantInfo() (info sbchrpc.CcCovenantInfo, err err
 	return
 }
 
-func (cli *SbchClient) getOperators() (operators []sbchrpc.OperatorInfo, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), getTimeout)
-	defer cancel()
-
-	err = cli.rpcCli.CallContext(ctx, &operators, "sbch_getOperators")
-	return
-}
-
-func (cli *SbchClient) getMonitors() (operators []sbchrpc.MonitorInfo, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), getTimeout)
-	defer cancel()
-
-	err = cli.rpcCli.CallContext(ctx, &operators, "sbch_getMonitors")
-	return
-}
-
 func (cli *SbchClient) getRedeemingUtxosForOperators() (utxos []*sbchrpc.UtxoInfo, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), getTimeout)
 	defer cancel()
 
 	err = cli.rpcCli.CallContext(ctx, &utxos, "sbch_getRedeemingUtxosForOperators")
+	return
+}
+
+func (cli *SbchClient) getToBeConvertedUtxosForOperators() (utxos []*sbchrpc.UtxoInfo, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), getTimeout)
+	defer cancel()
+
+	err = cli.rpcCli.CallContext(ctx, &utxos, "sbch_getToBeConvertedUtxosForOperators")
 	return
 }
 
