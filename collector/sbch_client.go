@@ -1,4 +1,4 @@
-package main
+package collector
 
 import (
 	"context"
@@ -17,7 +17,7 @@ type SbchClient struct {
 	//ethCli *ethclient.Client
 }
 
-func newSbchClient(rpcUrl string) (*SbchClient, error) {
+func NewSbchClient(rpcUrl string) (*SbchClient, error) {
 	rpcCli, err := rpc.DialContext(context.Background(), rpcUrl)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func newSbchClient(rpcUrl string) (*SbchClient, error) {
 	}, nil
 }
 
-func (cli *SbchClient) getCcCovenantInfo() (info sbchrpc.CcCovenantInfo, err error) {
+func (cli *SbchClient) GetCcCovenantInfo() (info sbchrpc.CcCovenantInfo, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), getTimeout)
 	defer cancel()
 
@@ -39,7 +39,7 @@ func (cli *SbchClient) getCcCovenantInfo() (info sbchrpc.CcCovenantInfo, err err
 	return
 }
 
-func (cli *SbchClient) getRedeemingUtxosForOperators() (utxos []*sbchrpc.UtxoInfo, err error) {
+func (cli *SbchClient) GetRedeemingUtxosForOperators() (utxos []*sbchrpc.UtxoInfo, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), getTimeout)
 	defer cancel()
 
@@ -47,7 +47,7 @@ func (cli *SbchClient) getRedeemingUtxosForOperators() (utxos []*sbchrpc.UtxoInf
 	return
 }
 
-func (cli *SbchClient) getToBeConvertedUtxosForOperators() (utxos []*sbchrpc.UtxoInfo, err error) {
+func (cli *SbchClient) GetToBeConvertedUtxosForOperators() (utxos []*sbchrpc.UtxoInfo, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), getTimeout)
 	defer cancel()
 
