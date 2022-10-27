@@ -5,8 +5,10 @@ import (
 	"time"
 
 	gethcmn "github.com/ethereum/go-ethereum/common"
+
 	ccc "github.com/smartbch/smartbch/crosschain/covenant"
-	sbchrpc "github.com/smartbch/smartbch/rpc/api"
+	sbchclient "github.com/smartbch/smartbch/rpc/client"
+	sbchrpc "github.com/smartbch/smartbch/rpc/types"
 )
 
 const (
@@ -14,7 +16,7 @@ const (
 )
 
 func Run(sbchRpcUrl string) {
-	sbchClient, err := NewSbchClient(sbchRpcUrl)
+	sbchClient, err := sbchclient.Dial(sbchRpcUrl)
 	if err != nil {
 		fmt.Println("failed to create smartBCH RPC client:", err.Error())
 		return
@@ -26,21 +28,22 @@ func Run(sbchRpcUrl string) {
 	}
 }
 
-func handleAllPendingUTXOs(sbchClient *SbchClient) {
-	cccInfo, err := sbchClient.GetCcCovenantInfo()
+func handleAllPendingUTXOs(sbchClient *sbchclient.Client) {
+	ccInfo, err := getCcInfo(sbchClient)
+
 	if err != nil {
 		fmt.Println("failed to get CcCovenantInfo:", err.Error())
 		return
 	}
 
-	redeemingUtxos, err := sbchClient.GetRedeemingUtxosForOperators()
+	redeemingUtxos, err := getRedeemingUtxosForOperators(sbchClient)
 	if err != nil {
 		fmt.Println("failed to get redeeming UTXOs:", err.Error())
 		return
 	}
 	if len(redeemingUtxos) > 0 {
-		operatorPubkeys := getOperatorPubkeys(cccInfo.Operators)
-		monitorPubkeys := getMonitorPubkeys(cccInfo.Monitors)
+		operatorPubkeys := getOperatorPubkeys(ccInfo.Operators)
+		monitorPubkeys := getMonitorPubkeys(ccInfo.Monitors)
 		ccCovenant, err := ccc.NewDefaultCcCovenant(operatorPubkeys, monitorPubkeys)
 		if err != nil {
 			fmt.Println("failed to create CcCovenant instance:", err.Error())
@@ -48,20 +51,20 @@ func handleAllPendingUTXOs(sbchClient *SbchClient) {
 		}
 
 		for _, utxo := range redeemingUtxos {
-			handleRedeemingUTXO(ccCovenant, cccInfo.Operators, utxo)
+			handleRedeemingUTXO(ccCovenant, ccInfo.Operators, utxo)
 		}
 	}
 
-	toBeConvertedUtxos, err := sbchClient.GetToBeConvertedUtxosForOperators()
+	toBeConvertedUtxos, err := getToBeConvertedUtxosForOperators(sbchClient)
 	if err != nil {
 		fmt.Println("failed to get redeeming UTXOs:", err.Error())
 		return
 	}
 	if len(toBeConvertedUtxos) > 0 {
-		oldOperatorPubkeys := getOperatorPubkeys(cccInfo.OldOperators)
-		oldMonitorPubkeys := getMonitorPubkeys(cccInfo.OldMonitors)
-		newOperatorPubkeys := getOperatorPubkeys(cccInfo.Operators)
-		newMonitorPubkeys := getMonitorPubkeys(cccInfo.Monitors)
+		oldOperatorPubkeys := getOperatorPubkeys(ccInfo.OldOperators)
+		oldMonitorPubkeys := getMonitorPubkeys(ccInfo.OldMonitors)
+		newOperatorPubkeys := getOperatorPubkeys(ccInfo.Operators)
+		newMonitorPubkeys := getMonitorPubkeys(ccInfo.Monitors)
 		ccCovenant, err := ccc.NewDefaultCcCovenant(oldOperatorPubkeys, oldMonitorPubkeys)
 		if err != nil {
 			fmt.Println("failed to create CcCovenant instance:", err.Error())
@@ -69,7 +72,7 @@ func handleAllPendingUTXOs(sbchClient *SbchClient) {
 		}
 
 		for _, utxo := range toBeConvertedUtxos {
-			handleToBeConvertedUTXO(ccCovenant, cccInfo.OldOperators,
+			handleToBeConvertedUTXO(ccCovenant, ccInfo.OldOperators,
 				newOperatorPubkeys, newMonitorPubkeys, utxo)
 		}
 	}
