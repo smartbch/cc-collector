@@ -80,7 +80,7 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client) {
 
 func handleRedeemingUTXO(
 	ccCovenant *ccc.CcCovenant,
-	operators []sbchrpc.OperatorInfo,
+	operators []*sbchrpc.OperatorInfo,
 	utxo *sbchrpc.UtxoInfo,
 ) {
 	txid := utxo.Txid[:]
@@ -126,7 +126,7 @@ func handleRedeemingUTXO(
 
 func handleToBeConvertedUTXO(
 	oldCcCovenant *ccc.CcCovenant,
-	oldOperators []sbchrpc.OperatorInfo,
+	oldOperators []*sbchrpc.OperatorInfo,
 	newOperatorPubkeys [][]byte,
 	newMonitorPubkeys [][]byte,
 	utxo *sbchrpc.UtxoInfo,

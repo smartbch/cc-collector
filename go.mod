@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/ethereum/go-ethereum v1.10.7
-	github.com/smartbch/smartbch v0.4.5-0.20221027025429-3c04d85d625e
+	github.com/smartbch/smartbch v0.4.5-0.20221031031137-6255528a4da6
 )
 
 require (
