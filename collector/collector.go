@@ -15,7 +15,8 @@ const (
 	minOperatorSigCount = 7
 )
 
-func Run(sbchRpcUrl string) {
+func Run(sbchRpcUrl, bchRpcUrl, bchRpcUsername, bchRpcPassword string) {
+	bchClient := newBchClient(bchRpcUrl, bchRpcUsername, bchRpcPassword)
 	sbchClient, err := sbchclient.Dial(sbchRpcUrl)
 	if err != nil {
 		fmt.Println("failed to create smartBCH RPC client:", err.Error())
@@ -23,12 +24,12 @@ func Run(sbchRpcUrl string) {
 	}
 
 	for {
-		handleAllPendingUTXOs(sbchClient)
+		handleAllPendingUTXOs(sbchClient, bchClient)
 		time.Sleep(1 * time.Minute)
 	}
 }
 
-func handleAllPendingUTXOs(sbchClient *sbchclient.Client) {
+func handleAllPendingUTXOs(sbchClient *sbchclient.Client, bchClient *BchRpcClient) {
 	ccInfo, err := getCcInfo(sbchClient)
 
 	if err != nil {
@@ -51,7 +52,7 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client) {
 		}
 
 		for _, utxo := range redeemingUtxos {
-			handleRedeemingUTXO(ccCovenant, ccInfo.Operators, utxo)
+			handleRedeemingUTXO(bchClient, ccCovenant, ccInfo.Operators, utxo)
 		}
 	}
 
@@ -72,13 +73,14 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client) {
 		}
 
 		for _, utxo := range toBeConvertedUtxos {
-			handleToBeConvertedUTXO(ccCovenant, ccInfo.OldOperators,
+			handleToBeConvertedUTXO(bchClient, ccCovenant, ccInfo.OldOperators,
 				newOperatorPubkeys, newMonitorPubkeys, utxo)
 		}
 	}
 }
 
 func handleRedeemingUTXO(
+	bchClient *BchRpcClient,
 	ccCovenant *ccc.CcCovenant,
 	operators []*sbchrpc.OperatorInfo,
 	utxo *sbchrpc.UtxoInfo,
@@ -116,7 +118,7 @@ func handleRedeemingUTXO(
 	}
 	fmt.Println("rawTx:", rawTx)
 
-	err = broadcastBchTx(rawTx)
+	err = bchClient.sendRawTx(rawTx)
 	if err != nil {
 		fmt.Println("failed to broadcast BCH tx:", err.Error())
 	}
@@ -125,6 +127,7 @@ func handleRedeemingUTXO(
 }
 
 func handleToBeConvertedUTXO(
+	bchClient *BchRpcClient,
 	oldCcCovenant *ccc.CcCovenant,
 	oldOperators []*sbchrpc.OperatorInfo,
 	newOperatorPubkeys [][]byte,
@@ -165,7 +168,7 @@ func handleToBeConvertedUTXO(
 	}
 	fmt.Println("rawTx:", rawTx)
 
-	err = broadcastBchTx(rawTx)
+	err = bchClient.sendRawTx(rawTx)
 	if err != nil {
 		fmt.Println("failed to broadcast BCH tx:", err.Error())
 	}
@@ -176,10 +179,4 @@ func handleToBeConvertedUTXO(
 func sbchAddrToBchAddr(addr gethcmn.Address) string {
 	// TODO
 	return addr.String()
-}
-
-func broadcastBchTx(rawTx []byte) error {
-	// TODO
-	fmt.Println(string(rawTx))
-	return nil
 }
