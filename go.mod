@@ -1,4 +1,4 @@
-module github.com/smartbch/cccollector
+module github.com/smartbch/cc-collector
 
 go 1.19
 

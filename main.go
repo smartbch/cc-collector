@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/smartbch/cccollector/collector"
+	"github.com/smartbch/cc-collector/collector"
 )
 
 var (
