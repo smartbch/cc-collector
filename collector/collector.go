@@ -1,10 +1,13 @@
 package collector
 
 import (
+	"encoding/hex"
 	"fmt"
 	"time"
 
 	gethcmn "github.com/ethereum/go-ethereum/common"
+	"github.com/gcash/bchd/chaincfg"
+	"github.com/gcash/bchutil"
 
 	ccc "github.com/smartbch/smartbch/crosschain/covenant"
 	sbchclient "github.com/smartbch/smartbch/rpc/client"
@@ -51,6 +54,8 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client, bchClient *BchRpcClien
 			return
 		}
 
+		_ccAddr, _ := ccCovenant.GetP2SHAddress()
+		fmt.Println("ccCovenantAddr:", _ccAddr)
 		for _, utxo := range redeemingUtxos {
 			handleRedeemingUTXO(bchClient, ccCovenant, ccInfo.Operators, utxo)
 		}
@@ -85,11 +90,26 @@ func handleRedeemingUTXO(
 	operators []*sbchrpc.OperatorInfo,
 	utxo *sbchrpc.UtxoInfo,
 ) {
+	fmt.Println("handleRedeemingUTXO ...")
+	fmt.Println("covenant:", utxo.CovenantAddr.String())
+	fmt.Println("txid:", hex.EncodeToString(utxo.Txid[:]))
+	fmt.Println("index:", utxo.Index)
+	fmt.Println("amount:", utxo.Amount)
+	fmt.Println("target:", utxo.RedeemTarget.String())
+	fmt.Println("txSigHash:", hex.EncodeToString(utxo.TxSigHash))
+
 	txid := utxo.Txid[:]
 	vout := utxo.Index
 	amt := int64(utxo.Amount)
-	toAddr := sbchAddrToBchAddr(utxo.RedeemTarget)
+	toAddr, err := sbchAddrToBchAddr(utxo.RedeemTarget)
+	if err != nil {
+		fmt.Println("failed to convert smartBCH address to BCH address:", err.Error())
+		return
+	}
+
+	fmt.Println("toAddr:", toAddr)
 	tx, sigHash, err := ccCovenant.GetRedeemByUserTxSigHash(txid, vout, amt, toAddr)
+	fmt.Println("sigHash:", hex.EncodeToString(sigHash))
 	if err != nil {
 		fmt.Println("failed to call GetRedeemByUserTxSigHash:", err.Error())
 		return
@@ -103,6 +123,7 @@ func handleRedeemingUTXO(
 			continue
 		}
 
+		fmt.Println(operator.RpcUrl, "sig:", hex.EncodeToString(sig))
 		sigs = append(sigs, sig)
 	}
 
@@ -116,7 +137,7 @@ func handleRedeemingUTXO(
 		fmt.Println("failed to sign tx:", err.Error())
 		return
 	}
-	fmt.Println("rawTx:", rawTx)
+	fmt.Println("rawTx:", hex.EncodeToString(rawTx))
 
 	err = bchClient.sendRawTx(rawTx)
 	if err != nil {
@@ -166,7 +187,7 @@ func handleToBeConvertedUTXO(
 		fmt.Println("failed to sign tx:", err.Error())
 		return
 	}
-	fmt.Println("rawTx:", rawTx)
+	fmt.Println("rawTx:", hex.EncodeToString(rawTx))
 
 	err = bchClient.sendRawTx(rawTx)
 	if err != nil {
@@ -176,7 +197,7 @@ func handleToBeConvertedUTXO(
 	// TODO
 }
 
-func sbchAddrToBchAddr(addr gethcmn.Address) string {
-	// TODO
-	return addr.String()
+func sbchAddrToBchAddr(sbchAddr gethcmn.Address) (string, error) {
+	bchAddr, err := bchutil.NewAddressPubKeyHash(sbchAddr[:], &chaincfg.TestNet3Params)
+	return bchAddr.EncodeAddress(), err
 }

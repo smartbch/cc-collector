@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -20,7 +21,13 @@ type OperatorResp struct {
 func getSigByHash(operatorUrl string, txSigHash []byte) ([]byte, error) {
 	fullUrl := operatorUrl + "/sig?hash=" + hex.EncodeToString(txSigHash)
 	fmt.Println("getSigByHash:", fullUrl)
-	resp, err := http.Get(fullUrl)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Get(fullUrl)
 	if err != nil {
 		return nil, err
 	}
