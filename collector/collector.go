@@ -63,7 +63,7 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client, bchClient *BchRpcClien
 
 	toBeConvertedUtxos, err := getToBeConvertedUtxosForOperators(sbchClient)
 	if err != nil {
-		fmt.Println("failed to get redeeming UTXOs:", err.Error())
+		fmt.Println("failed to get toBeConverted UTXOs:", err.Error())
 		return
 	}
 	if len(toBeConvertedUtxos) > 0 {
@@ -71,6 +71,14 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client, bchClient *BchRpcClien
 		oldMonitorPubkeys := getMonitorPubkeys(ccInfo.OldMonitors)
 		newOperatorPubkeys := getOperatorPubkeys(ccInfo.Operators)
 		newMonitorPubkeys := getMonitorPubkeys(ccInfo.Monitors)
+
+		if len(oldOperatorPubkeys) == 0 {
+			oldOperatorPubkeys = newOperatorPubkeys
+		}
+		if len(oldMonitorPubkeys) == 0 {
+			oldMonitorPubkeys = newMonitorPubkeys
+		}
+
 		ccCovenant, err := ccc.NewDefaultCcCovenant(oldOperatorPubkeys, oldMonitorPubkeys)
 		if err != nil {
 			fmt.Println("failed to create CcCovenant instance:", err.Error())

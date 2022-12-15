@@ -4,7 +4,9 @@ go 1.19
 
 require (
 	github.com/ethereum/go-ethereum v1.10.7
-	github.com/smartbch/smartbch v0.4.5-0.20221123113310-3e31bb5e33df
+	github.com/gcash/bchd v0.19.0
+	github.com/gcash/bchutil v0.0.0-20210113190856-6ea28dff4000
+	github.com/smartbch/smartbch v0.4.5-0.20221215030540-d10f246b6711
 )
 
 require (
@@ -13,9 +15,7 @@ require (
 	github.com/dchest/siphash v1.2.2 // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/gcash/bchd v0.19.0 // indirect
 	github.com/gcash/bchlog v0.0.0-20180913005452-b4f036f92fa6 // indirect
-	github.com/gcash/bchutil v0.0.0-20210113190856-6ea28dff4000 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect

@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -38,11 +39,14 @@ func newBchClient(rpcUrl, username, password string) *BchRpcClient {
 }
 
 func (client *BchRpcClient) sendRawTx(txData []byte) error {
-	reqStr := fmt.Sprintf(SendRawTxReq, txData)
+	reqStr := fmt.Sprintf(SendRawTxReq, hex.EncodeToString(txData))
+	fmt.Println("sendRawTx req:", reqStr)
+
 	respData, err := client.sendRequest(reqStr)
 	if err != nil {
 		return err
 	}
+	fmt.Println("sendRawTx resp:", string(respData))
 
 	var result JsonRpcResp
 	err = json.Unmarshal(respData, &result)

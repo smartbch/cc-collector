@@ -14,10 +14,10 @@ const (
 
 func getCcInfo(client *sbchclient.Client) (*sbchrpc.CcInfo, error) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), getTimeout)
-	cccInfo, err := client.CcInfo(ctx)
+	ccInfo, err := client.CcInfo(ctx)
 	defer cancelFn()
 
-	return cccInfo, err
+	return ccInfo, err
 }
 
 func getRedeemingUtxosForOperators(client *sbchclient.Client) ([]*sbchrpc.UtxoInfo, error) {
