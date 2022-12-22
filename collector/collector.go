@@ -28,7 +28,7 @@ func Run(sbchRpcUrl, bchRpcUrl, bchRpcUsername, bchRpcPassword string) {
 
 	for {
 		handleAllPendingUTXOs(sbchClient, bchClient)
-		time.Sleep(1 * time.Minute)
+		time.Sleep(5 * time.Minute)
 	}
 }
 
@@ -157,7 +157,7 @@ func handleRedeemingUTXO(
 		fmt.Println("failed to sign tx:", err.Error())
 		return
 	}
-	fmt.Println("rawTx:", hex.EncodeToString(rawTx))
+	//fmt.Println("rawTx:", hex.EncodeToString(rawTx))
 
 	err = bchClient.sendRawTx(rawTx)
 	if err != nil {
@@ -212,7 +212,7 @@ func handleToBeConvertedUTXO(
 		fmt.Println("failed to sign tx:", err.Error())
 		return
 	}
-	fmt.Println("rawTx:", hex.EncodeToString(rawTx))
+	//fmt.Println("rawTx:", hex.EncodeToString(rawTx))
 
 	err = bchClient.sendRawTx(rawTx)
 	if err != nil {

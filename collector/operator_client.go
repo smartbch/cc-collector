@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -20,7 +19,7 @@ type OperatorResp struct {
 
 func getSigByHash(operatorUrl string, txSigHash []byte) ([]byte, error) {
 	fullUrl := operatorUrl + "/sig?hash=" + hex.EncodeToString(txSigHash)
-	fmt.Println("getSigByHash:", fullUrl)
+	//fmt.Println("getSigByHash:", fullUrl)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
