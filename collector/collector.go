@@ -142,9 +142,14 @@ func handleRedeemingUTXO(
 		sigs = append(sigs, sig)
 	}
 
-	if len(sigs) < minOperatorSigCount {
-		fmt.Println("not enough operator sigs:", len(sigs))
+	nSigs := len(sigs)
+	if nSigs < minOperatorSigCount {
+		fmt.Println("not enough operator sigs:", nSigs)
 		return
+	}
+
+	if nSigs > minOperatorSigCount {
+		sigs = sigs[:minOperatorSigCount]
 	}
 
 	_, rawTx, err := ccCovenant.FinishRedeemByUserTx(tx, sigs)
@@ -191,9 +196,14 @@ func handleToBeConvertedUTXO(
 		sigs = append(sigs, sig)
 	}
 
-	if len(sigs) < minOperatorSigCount {
-		fmt.Println("not enough operator sigs:", len(sigs))
+	nSigs := len(sigs)
+	if nSigs < minOperatorSigCount {
+		fmt.Println("not enough operator sigs:", nSigs)
 		return
+	}
+
+	if nSigs > minOperatorSigCount {
+		sigs = sigs[:minOperatorSigCount]
 	}
 
 	_, rawTx, err := oldCcCovenant.FinishConvertByOperatorsTx(tx,

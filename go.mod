@@ -6,7 +6,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.7
 	github.com/gcash/bchd v0.19.0
 	github.com/gcash/bchutil v0.0.0-20210113190856-6ea28dff4000
-	github.com/smartbch/smartbch v0.4.5-0.20221222012058-d701995c48fc
+	github.com/smartbch/smartbch v0.4.5-0.20221222013247-0439ccd0676a
 )
 
 require (
