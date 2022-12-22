@@ -79,14 +79,21 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client, bchClient *BchRpcClien
 			oldMonitorPubkeys = newMonitorPubkeys
 		}
 
+		oldOps := ccInfo.OldOperators
+		if len(oldOps) == 0 {
+			oldOps = ccInfo.Operators
+		}
+
 		ccCovenant, err := ccc.NewDefaultCcCovenant(oldOperatorPubkeys, oldMonitorPubkeys)
 		if err != nil {
 			fmt.Println("failed to create CcCovenant instance:", err.Error())
 			return
 		}
 
+		_ccAddr, _ := ccCovenant.GetP2SHAddress()
+		fmt.Println("oldCcCovenantAddr:", _ccAddr)
 		for _, utxo := range toBeConvertedUtxos {
-			handleToBeConvertedUTXO(bchClient, ccCovenant, ccInfo.OldOperators,
+			handleToBeConvertedUTXO(bchClient, ccCovenant, oldOps,
 				newOperatorPubkeys, newMonitorPubkeys, utxo)
 		}
 	}
@@ -185,7 +192,7 @@ func handleToBeConvertedUTXO(
 	}
 
 	if len(sigs) < minOperatorSigCount {
-		fmt.Println("not enough operator sigs")
+		fmt.Println("not enough operator sigs:", len(sigs))
 		return
 	}
 
