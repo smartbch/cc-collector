@@ -143,7 +143,7 @@ func handleRedeemingUTXO(
 	}
 
 	if len(sigs) < minOperatorSigCount {
-		fmt.Println("not enough operator sigs")
+		fmt.Println("not enough operator sigs:", len(sigs))
 		return
 	}
 
