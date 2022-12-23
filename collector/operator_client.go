@@ -1,50 +1,12 @@
 package collector
 
 import (
-	"crypto/tls"
-	"encoding/hex"
-	"encoding/json"
-	"errors"
-	"io"
-	"net/http"
+	"time"
 
-	gethcmn "github.com/ethereum/go-ethereum/common"
+	opclient "github.com/smartbch/cc-operator/client"
 )
 
-type OperatorResp struct {
-	Success bool   `json:"success"`
-	Error   string `json:"error,omitempty"`
-	Result  string `json:"result,omitempty"`
-}
-
 func getSigByHash(operatorUrl string, txSigHash []byte) ([]byte, error) {
-	fullUrl := operatorUrl + "/sig?hash=" + hex.EncodeToString(txSigHash)
-	//fmt.Println("getSigByHash:", fullUrl)
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{Transport: tr}
-
-	resp, err := client.Get(fullUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-	respBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var respJson OperatorResp
-	err = json.Unmarshal(respBytes, &respJson)
-	if err != nil {
-		return nil, err
-	}
-	if respJson.Error != "" {
-		return nil, errors.New(respJson.Error)
-	}
-
-	return gethcmn.FromHex(respJson.Result), nil
+	client := opclient.NewClient(operatorUrl, 5*time.Second)
+	return client.GetSig(txSigHash)
 }
