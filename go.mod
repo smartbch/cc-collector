@@ -6,8 +6,8 @@ require (
 	github.com/ethereum/go-ethereum v1.10.7
 	github.com/gcash/bchd v0.19.0
 	github.com/gcash/bchutil v0.0.0-20210113190856-6ea28dff4000
-	github.com/smartbch/cc-operator v0.0.0-20221223074035-5a5a38182f92
-	github.com/smartbch/smartbch v0.4.5-0.20221222013247-0439ccd0676a
+	github.com/smartbch/cc-operator v0.0.0-20221226070905-27550321cac3
+	github.com/smartbch/smartbch v0.4.5-0.20221223072312-83ff6e7ddfe3
 )
 
 require (
