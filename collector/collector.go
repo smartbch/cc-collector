@@ -56,7 +56,31 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client, bchClient *BchRpcClien
 
 		_ccAddr, _ := ccCovenant.GetP2SHAddress()
 		fmt.Println("ccCovenantAddr:", _ccAddr)
+
+		// begin hack!
+		oldOperatorPubkeys := getOperatorPubkeys(ccInfo.OldOperators)
+		oldMonitorPubkeys := getMonitorPubkeys(ccInfo.OldMonitors)
+		if len(oldOperatorPubkeys) == 0 {
+			oldOperatorPubkeys = operatorPubkeys
+		}
+		if len(oldMonitorPubkeys) == 0 {
+			oldMonitorPubkeys = monitorPubkeys
+		}
+		oldCcCovenant, err := ccc.NewDefaultCcCovenant(oldOperatorPubkeys, oldMonitorPubkeys)
+		if err != nil {
+			fmt.Println("failed to create old CcCovenant instance:", err.Error())
+			return
+		}
+		oldCccAddr, _ := oldCcCovenant.GetP2SHAddress20()
+		// end hack!
+
 		for _, utxo := range redeemingUtxos {
+			// begin hack!
+			if utxo.CovenantAddr == oldCccAddr {
+				handleRedeemingUTXO(bchClient, oldCcCovenant, ccInfo.OldOperators, utxo)
+				continue
+			}
+			// end hack!
 			handleRedeemingUTXO(bchClient, ccCovenant, ccInfo.Operators, utxo)
 		}
 	}
