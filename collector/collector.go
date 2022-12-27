@@ -48,16 +48,43 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client, bchClient *BchRpcClien
 	if len(redeemingUtxos) > 0 {
 		operatorPubkeys := getOperatorPubkeys(ccInfo.Operators)
 		monitorPubkeys := getMonitorPubkeys(ccInfo.Monitors)
-		ccCovenant, err := ccc.NewDefaultCcCovenant(operatorPubkeys, monitorPubkeys)
+		currCovenant, err := ccc.NewDefaultCcCovenant(operatorPubkeys, monitorPubkeys)
 		if err != nil {
 			fmt.Println("failed to create CcCovenant instance:", err.Error())
 			return
 		}
+		currCovenantAddr, _ := currCovenant.GetP2SHAddress20()
+		fmt.Println("ccCovenantAddr:", hex.EncodeToString(currCovenantAddr[:]))
 
-		_ccAddr, _ := ccCovenant.GetP2SHAddress()
-		fmt.Println("ccCovenantAddr:", _ccAddr)
+		oldOperatorPubkeys := getOperatorPubkeys(ccInfo.OldOperators)
+		oldMonitorPubkeys := getMonitorPubkeys(ccInfo.OldMonitors)
+		if len(oldOperatorPubkeys) == 0 {
+			oldOperatorPubkeys = operatorPubkeys
+		}
+		if len(oldMonitorPubkeys) == 0 {
+			oldMonitorPubkeys = monitorPubkeys
+		}
+		oldCovenant, err := ccc.NewDefaultCcCovenant(oldOperatorPubkeys, oldMonitorPubkeys)
+		if err != nil {
+			fmt.Println("failed to create old CcCovenant instance:", err.Error())
+			return
+		}
+		oldCovenantAddr, _ := oldCovenant.GetP2SHAddress20()
+		fmt.Println("old ccCovenantAddr:", hex.EncodeToString(oldCovenantAddr[:]))
+
 		for _, utxo := range redeemingUtxos {
-			handleRedeemingUTXO(bchClient, ccCovenant, ccInfo.Operators, utxo)
+			if utxo.CovenantAddr == currCovenantAddr {
+				handleRedeemingUTXO(bchClient, currCovenant, ccInfo.Operators, utxo)
+			} else if utxo.CovenantAddr == oldCovenantAddr {
+				ops := ccInfo.OldOperators
+				if len(ops) == 0 {
+					ops = ccInfo.Operators
+				}
+
+				handleRedeemingUTXO(bchClient, oldCovenant, ops, utxo)
+			} else {
+				fmt.Println("unknown covenant address:", hex.EncodeToString(utxo.CovenantAddr[:]))
+			}
 		}
 	}
 
