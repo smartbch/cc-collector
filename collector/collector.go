@@ -33,6 +33,7 @@ func Run(sbchRpcUrl, bchRpcUrl, bchRpcUsername, bchRpcPassword string) {
 }
 
 func handleAllPendingUTXOs(sbchClient *sbchclient.Client, bchClient *BchRpcClient) {
+	fmt.Println("handleAllPendingUTXOs ...")
 	ccInfo, err := getCcInfo(sbchClient)
 
 	if err != nil {
@@ -45,6 +46,7 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client, bchClient *BchRpcClien
 		fmt.Println("failed to get redeeming UTXOs:", err.Error())
 		return
 	}
+	fmt.Println("redeemingUtxos:", len(redeemingUtxos))
 	if len(redeemingUtxos) > 0 {
 		operatorPubkeys := getOperatorPubkeys(ccInfo.Operators)
 		monitorPubkeys := getMonitorPubkeys(ccInfo.Monitors)
@@ -93,6 +95,7 @@ func handleAllPendingUTXOs(sbchClient *sbchclient.Client, bchClient *BchRpcClien
 		fmt.Println("failed to get toBeConverted UTXOs:", err.Error())
 		return
 	}
+	fmt.Println("toBeConvertedUtxos:", len(toBeConvertedUtxos))
 	if len(toBeConvertedUtxos) > 0 {
 		oldOperatorPubkeys := getOperatorPubkeys(ccInfo.OldOperators)
 		oldMonitorPubkeys := getMonitorPubkeys(ccInfo.OldMonitors)
