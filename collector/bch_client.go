@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // https://docs.bitcoincashnode.org/doc/json-rpc/sendrawtransaction/
@@ -40,13 +42,13 @@ func newBchClient(rpcUrl, username, password string) *BchRpcClient {
 
 func (client *BchRpcClient) sendRawTx(txData []byte) error {
 	reqStr := fmt.Sprintf(SendRawTxReq, hex.EncodeToString(txData))
-	fmt.Println("sendRawTx req:", reqStr)
+	log.Info("sendRawTx req:", reqStr)
 
 	respData, err := client.sendRequest(reqStr)
 	if err != nil {
 		return err
 	}
-	fmt.Println("sendRawTx resp:", string(respData))
+	log.Info("sendRawTx resp:", string(respData))
 
 	var result JsonRpcResp
 	err = json.Unmarshal(respData, &result)
