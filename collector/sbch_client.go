@@ -14,26 +14,31 @@ const (
 
 func getCcInfo(client *sbchclient.Client) (*sbchrpc.CcInfo, error) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), getTimeout)
-	ccInfo, err := client.CcInfo(ctx)
 	defer cancelFn()
 
-	return ccInfo, err
+	return client.CcInfo(ctx)
 }
 
 func getRedeemingUtxosForOperators(client *sbchclient.Client) ([]*sbchrpc.UtxoInfo, error) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), getTimeout)
-	utxos, err := client.RedeemingUtxosForOperators(ctx)
 	defer cancelFn()
 
-	return utxos.Infos, err
+	utxos, err := client.RedeemingUtxosForOperators(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return utxos.Infos, nil
 }
 
 func getToBeConvertedUtxosForOperators(client *sbchclient.Client) ([]*sbchrpc.UtxoInfo, error) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), getTimeout)
-	utxos, err := client.ToBeConvertedUtxosForOperators(ctx)
 	defer cancelFn()
 
-	return utxos.Infos, err
+	utxos, err := client.ToBeConvertedUtxosForOperators(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return utxos.Infos, nil
 }
 
 func getOperatorPubkeys(operators []*sbchrpc.OperatorInfo) [][]byte {
