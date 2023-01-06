@@ -9,6 +9,7 @@ import (
 	"github.com/gcash/bchutil"
 	log "github.com/sirupsen/logrus"
 
+	opclient "github.com/smartbch/cc-operator/client"
 	ccc "github.com/smartbch/smartbch/crosschain/covenant"
 	sbchclient "github.com/smartbch/smartbch/rpc/client"
 	sbchrpc "github.com/smartbch/smartbch/rpc/types"
@@ -255,4 +256,9 @@ func handleToBeConvertedUTXO(
 func sbchAddrToBchAddr(sbchAddr gethcmn.Address) (string, error) {
 	bchAddr, err := bchutil.NewAddressPubKeyHash(sbchAddr[:], &chaincfg.TestNet3Params)
 	return bchAddr.EncodeAddress(), err
+}
+
+func getSigByHash(operatorUrl string, txSigHash []byte) ([]byte, error) {
+	client := opclient.NewClient(operatorUrl, 5*time.Second)
+	return client.GetSig(txSigHash)
 }
