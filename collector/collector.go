@@ -169,13 +169,13 @@ func handleRedeemingUTXO(
 			continue
 		}
 
-		log.Info(operator.RpcUrl, "sig:", hex.EncodeToString(sig))
+		log.Info("operator:", operator.RpcUrl, "sig:", hex.EncodeToString(sig))
 		sigs = append(sigs, sig)
 	}
 
 	nSigs := len(sigs)
 	if nSigs < minOperatorSigCount {
-		log.Info("not enough operator sigs:", nSigs)
+		log.Warn("not enough operator sigs:", nSigs)
 		return
 	}
 
@@ -229,7 +229,7 @@ func handleToBeConvertedUTXO(
 
 	nSigs := len(sigs)
 	if nSigs < minOperatorSigCount {
-		log.Info("not enough operator sigs:", nSigs)
+		log.Warn("not enough operator sigs:", nSigs)
 		return
 	}
 
